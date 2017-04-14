@@ -9,6 +9,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -22,10 +30,37 @@ public class SchemaGenerator {
 	 */
 	public static void main(String[] args) {
 		
-        // The name of the file to open.
-        String fileName = args[0]; //"/Users/spunreddy/Documents/snaplogic/field/Customers/Cap1/pipelines/sample-ppdd_header_pipe_delimited.txt";
-        String delimiter = args[1];
-        String outputDirectory = args[2];
+		Options options = new Options();
+
+        Option input = new Option("i", "input", true, "input file path");
+        input.setRequired(true);
+        options.addOption(input);
+
+        Option delimiter = new Option("d", "delimiter", true, "input file delimiter");
+        delimiter.setRequired(true);
+        options.addOption(delimiter);
+
+        Option output = new Option("o", "output", true, "output directory");
+        output.setRequired(true);
+        options.addOption(output);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd;
+        try {
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("utility-name", options);
+
+            System.exit(1);
+            return;
+        }
+		
+		// The name of the file to open.
+        String fileName = cmd.getOptionValue("input"); //args[0]; //"/Users/spunreddy/Documents/snaplogic/field/Customers/Cap1/pipelines/sample-ppdd_header_pipe_delimited.txt";
+        String fileDelimiter = cmd.getOptionValue("delimiter"); //args[1];
+        String outputDirectory = cmd.getOptionValue("output"); //args[2];
 
         // This will reference one line at a time
         String line = null;
@@ -42,7 +77,7 @@ public class SchemaGenerator {
 
             while((line = bufferedReader.readLine()) != null) {
               //String[] value_split = line.split("\\|");
-              String[] value_split = line.split(delimiter);
+              String[] value_split = line.split(fileDelimiter);
               
               Schema schema = new Schema();
               List<Field> fields = new ArrayList<Field>();
